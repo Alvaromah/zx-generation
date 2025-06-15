@@ -145,6 +145,7 @@ Desktop.ini
 .nfs*
 
 # Project specific
+**/.claude
 **/.vs
 *.tap
 *.z80
@@ -153,4 +154,5 @@ Desktop.ini
 !rom/*.rom
 temp/
 tmp/
-/www
+www/
+

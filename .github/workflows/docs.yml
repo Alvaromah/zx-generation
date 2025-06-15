@@ -1,0 +1,136 @@
+name: Deploy Documentation
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'README.md'
+      - 'API.md'
+      - 'examples/**'
+      - '.github/workflows/docs.yml'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build project
+      run: npm run build
+    
+    - name: Setup Pages
+      uses: actions/configure-pages@v3
+    
+    - name: Create docs site
+      run: |
+        mkdir -p docs
+        cp README.md docs/
+        cp API.md docs/
+        cp -r examples docs/
+        cp -r dist docs/
+        # Create index.html that redirects to the example
+        cat > docs/index.html << 'EOF'
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>ZXGeneration - ZX Spectrum Emulator</title>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <style>
+                body {
+                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                    max-width: 800px;
+                    margin: 0 auto;
+                    padding: 2rem;
+                    line-height: 1.6;
+                }
+                .buttons {
+                    display: flex;
+                    gap: 1rem;
+                    margin: 2rem 0;
+                    flex-wrap: wrap;
+                }
+                .button {
+                    display: inline-block;
+                    padding: 0.75rem 1.5rem;
+                    background: #007bff;
+                    color: white;
+                    text-decoration: none;
+                    border-radius: 0.25rem;
+                    transition: background 0.2s;
+                }
+                .button:hover {
+                    background: #0056b3;
+                }
+                .button.secondary {
+                    background: #6c757d;
+                }
+                .button.secondary:hover {
+                    background: #545b62;
+                }
+            </style>
+        </head>
+        <body>
+            <h1>ZXGeneration</h1>
+            <p>A JavaScript-based ZX Spectrum 48K emulator that runs in your browser.</p>
+            
+            <div class="buttons">
+                <a href="examples/basic.html" class="button">Launch Emulator</a>
+                <a href="examples/mobile.html" class="button secondary">Mobile Version</a>
+                <a href="https://github.com/alvaromah/zx-generation" class="button secondary">View on GitHub</a>
+            </div>
+            
+            <h2>Features</h2>
+            <ul>
+                <li>Accurate Z80 CPU emulation</li>
+                <li>48K memory model</li>
+                <li>ULA video generation</li>
+                <li>Beeper sound emulation</li>
+                <li>TAP file loading</li>
+                <li>Z80 snapshot support</li>
+                <li>Mobile touch keyboard</li>
+                <li>Save states</li>
+            </ul>
+            
+            <h2>Documentation</h2>
+            <ul>
+                <li><a href="API.md">API Reference</a></li>
+                <li><a href="README.md">README</a></li>
+            </ul>
+        </body>
+        </html>
+        EOF
+    
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v2
+      with:
+        path: ./docs
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v2

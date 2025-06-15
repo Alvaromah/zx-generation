@@ -1,0 +1,73 @@
+name: Code Quality
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # Fetch all history for proper diffing
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Check code formatting
+      run: npm run format:check || (echo "::error::Code is not properly formatted. Run 'npm run format' to fix." && exit 1)
+    
+    - name: Run ESLint
+      run: npm run lint -- --format=stylish
+    
+    - name: Check for console.log statements
+      run: |
+        if grep -r "console\.log" --include="*.js" src/ | grep -v "// eslint-disable-line" | grep -v "tests/"; then
+          echo "::error::Found console.log statements in source code. Please remove them."
+          exit 1
+        fi
+    
+    - name: Check test coverage
+      run: |
+        npm test -- --coverage --coverageReporters=text-summary
+        # Extract coverage percentage and check if it meets threshold
+        COVERAGE=$(npm test -- --coverage --coverageReporters=json-summary 2>/dev/null | grep -oP '"lines":{"total":\d+,"covered":\d+,"skipped":\d+,"pct":\K\d+' | head -1)
+        if [ "$COVERAGE" -lt "80" ]; then
+          echo "::error::Test coverage is below 80% (current: $COVERAGE%)"
+          exit 1
+        fi
+    
+    - name: Check bundle size
+      run: |
+        npm run build
+        echo "Bundle sizes:"
+        ls -lh dist/
+        
+        # Check if main bundle exceeds limit
+        MAIN_SIZE=$(stat -c%s dist/zxgeneration.min.js 2>/dev/null || stat -f%z dist/zxgeneration.min.js)
+        MAX_SIZE=524288  # 512KB
+        
+        if [ "$MAIN_SIZE" -gt "$MAX_SIZE" ]; then
+          echo "::error::Main bundle size exceeds 512KB limit (current: $MAIN_SIZE bytes)"
+          exit 1
+        fi
+    
+    - name: Security audit
+      run: npm audit --audit-level=high
+    
+    - name: License check
+      run: |
+        # Simple check for license headers in source files
+        for file in $(find src -name "*.js"); do
+          if ! head -n 5 "$file" | grep -q -E "(MIT|License|Copyright)" && ! grep -q "@jest-environment" "$file"; then
+            echo "::warning file=$file::Missing license header"
+          fi
+        done
