@@ -10,6 +10,7 @@
  * - TAP format is simple: 2-byte length + data (including flag + checksum)
  * - TZX format supports multiple block types for custom loaders
  */
+/* eslint-disable no-console */
 
 export class Tape {
   constructor(spectrum) {

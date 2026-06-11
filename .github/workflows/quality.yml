@@ -29,13 +29,10 @@ jobs:
       run: npm run lint -- --format=stylish
     
     - name: Check for console.log statements
-      # debugger.js is a console tool and tape.js logs block info on load;
-      # everything else in src/ must stay console.log-free.
-      run: |
-        if grep -rn "^\s*console\.log" --include="*.js" src/ | grep -v "src/utils/debugger.js" | grep -v "src/spectrum/tape.js"; then
-          echo "::error::Found console.log statements in source code. Please remove them."
-          exit 1
-        fi
+      # console.warn/error/info/debug are fine; console.log needs an
+      # eslint-disable comment (debugger.js and tape.js are console tools
+      # and carry a file-level disable).
+      run: npx eslint src --rule '{"no-console":["error",{"allow":["warn","error","info","debug"]}]}'
     
     - name: Check test coverage
       # jest enforces the coverageThreshold in jest.config.js and exits

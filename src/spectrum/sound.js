@@ -93,7 +93,7 @@ export class SpectrumSound {
       }
 
       this.enabled = true;
-      console.log('Basic sound (ScriptProcessor) initialized at', this.sampleRate, 'Hz');
+      console.log('Basic sound (ScriptProcessor) initialized at', this.sampleRate, 'Hz'); // eslint-disable-line no-console
       return true;
     } catch (error) {
       console.error('Failed to initialize audio:', error);
@@ -178,6 +178,7 @@ export class SpectrumSound {
       this.currentBeeperState = newState;
 
       if (this.debugMode && this.edgeCount < 100) {
+        // eslint-disable-next-line no-console
         console.log(
           `[Basic] Edge ${this.edgeCount++}: ${this.lastBeeperState} -> ${newState} at T-state ${absoluteTState}`,
         );
@@ -208,6 +209,7 @@ export class SpectrumSound {
     // This avoids timing issues with the main thread
 
     if (this.debugMode && this.beeperChanges.length > 0) {
+      // eslint-disable-next-line no-console
       console.log(`[Basic] Frame ended: ${this.beeperChanges.length} edges pending`);
     }
   }

@@ -2,6 +2,7 @@
  * Z80 Debugger
  * Simple debugging utilities for the emulator
  */
+/* eslint-disable no-console */
 class Z80Debugger {
   constructor(cpu) {
     this.cpu = cpu;
