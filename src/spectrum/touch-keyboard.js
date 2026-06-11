@@ -4,107 +4,109 @@
  */
 
 export class TouchKeyboard {
-    constructor(spectrum, container) {
-        this.spectrum = spectrum;
-        this.container = container;
-        this.element = null;
-        this.isVisible = false;
-        this.activeKeys = new Set();
-        
-        this._init();
+  constructor(spectrum, container) {
+    this.spectrum = spectrum;
+    this.container = container;
+    this.element = null;
+    this.isVisible = false;
+    this.activeKeys = new Set();
+
+    this._init();
+  }
+
+  _init() {
+    // Create keyboard container
+    this.element = document.createElement('div');
+    this.element.className = 'zx-touch-keyboard';
+    this.element.innerHTML = this._generateKeyboardHTML();
+
+    // Add default styles
+    this._addStyles();
+
+    // Attach to container
+    if (typeof this.container === 'string') {
+      document.querySelector(this.container).appendChild(this.element);
+    } else {
+      this.container.appendChild(this.element);
     }
-    
-    _init() {
-        // Create keyboard container
-        this.element = document.createElement('div');
-        this.element.className = 'zx-touch-keyboard';
-        this.element.innerHTML = this._generateKeyboardHTML();
-        
-        // Add default styles
-        this._addStyles();
-        
-        // Attach to container
-        if (typeof this.container === 'string') {
-            document.querySelector(this.container).appendChild(this.element);
-        } else {
-            this.container.appendChild(this.element);
-        }
-        
-        // Setup event handlers
-        this._setupEventHandlers();
-        
-        // Auto-detect if we should show keyboard
-        if (this._isTouchDevice()) {
-            this.show();
-        }
+
+    // Setup event handlers
+    this._setupEventHandlers();
+
+    // Auto-detect if we should show keyboard
+    if (this._isTouchDevice()) {
+      this.show();
     }
-    
-    _generateKeyboardHTML() {
-        const rows = [
-            ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
-            ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
-            ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'ENTER'],
-            ['CAPS', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'SYMB', 'SPACE']
-        ];
-        
-        let html = '<div class="zx-keyboard-toggle">⌨️</div>';
-        html += '<div class="zx-keyboard-layout">';
-        
-        rows.forEach((row, rowIndex) => {
-            html += `<div class="zx-keyboard-row row-${rowIndex}">`;
-            row.forEach(key => {
-                const displayKey = this._getDisplayKey(key);
-                const className = this._getKeyClass(key);
-                html += `<button class="zx-key ${className}" data-key="${key}">${displayKey}</button>`;
-            });
-            html += '</div>';
-        });
-        
-        // Add arrow keys row
-        html += '<div class="zx-keyboard-row row-arrows">';
-        html += '<button class="zx-key key-arrow" data-key="ArrowLeft">←</button>';
-        html += '<button class="zx-key key-arrow" data-key="ArrowDown">↓</button>';
-        html += '<button class="zx-key key-arrow" data-key="ArrowUp">↑</button>';
-        html += '<button class="zx-key key-arrow" data-key="ArrowRight">→</button>';
-        html += '</div>';
-        
-        html += '</div>';
-        return html;
+  }
+
+  _generateKeyboardHTML() {
+    const rows = [
+      ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+      ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+      ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'ENTER'],
+      ['CAPS', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'SYMB', 'SPACE'],
+    ];
+
+    let html = '<div class="zx-keyboard-toggle">⌨️</div>';
+    html += '<div class="zx-keyboard-layout">';
+
+    rows.forEach((row, rowIndex) => {
+      html += `<div class="zx-keyboard-row row-${rowIndex}">`;
+      row.forEach((key) => {
+        const displayKey = this._getDisplayKey(key);
+        const className = this._getKeyClass(key);
+        html += `<button class="zx-key ${className}" data-key="${key}">${displayKey}</button>`;
+      });
+      html += '</div>';
+    });
+
+    // Add arrow keys row
+    html += '<div class="zx-keyboard-row row-arrows">';
+    html += '<button class="zx-key key-arrow" data-key="ArrowLeft">←</button>';
+    html += '<button class="zx-key key-arrow" data-key="ArrowDown">↓</button>';
+    html += '<button class="zx-key key-arrow" data-key="ArrowUp">↑</button>';
+    html += '<button class="zx-key key-arrow" data-key="ArrowRight">→</button>';
+    html += '</div>';
+
+    html += '</div>';
+    return html;
+  }
+
+  _getDisplayKey(key) {
+    const displayMap = {
+      CAPS: 'CAPS SHIFT',
+      SYMB: 'SYMBOL',
+      SPACE: '━━━━━',
+      ENTER: '↵',
+    };
+    return displayMap[key] || key;
+  }
+
+  _getKeyClass(key) {
+    const classes = [];
+    if (['CAPS', 'SYMB', 'ENTER', 'SPACE'].includes(key)) {
+      classes.push('key-special');
     }
-    
-    _getDisplayKey(key) {
-        const displayMap = {
-            'CAPS': 'CAPS SHIFT',
-            'SYMB': 'SYMBOL',
-            'SPACE': '━━━━━',
-            'ENTER': '↵'
-        };
-        return displayMap[key] || key;
+    if (key === 'SPACE') {
+      classes.push('key-space');
     }
-    
-    _getKeyClass(key) {
-        const classes = [];
-        if (['CAPS', 'SYMB', 'ENTER', 'SPACE'].includes(key)) {
-            classes.push('key-special');
-        }
-        if (key === 'SPACE') {
-            classes.push('key-space');
-        }
-        if (key === 'ENTER') {
-            classes.push('key-enter');
-        }
-        if (['CAPS', 'SYMB'].includes(key)) {
-            classes.push('key-modifier');
-        }
-        return classes.join(' ');
+    if (key === 'ENTER') {
+      classes.push('key-enter');
     }
-    
-    _addStyles() {
-        if (document.getElementById('zx-touch-keyboard-styles')) return;
-        
-        const style = document.createElement('style');
-        style.id = 'zx-touch-keyboard-styles';
-        style.textContent = `
+    if (['CAPS', 'SYMB'].includes(key)) {
+      classes.push('key-modifier');
+    }
+    return classes.join(' ');
+  }
+
+  _addStyles() {
+    if (document.getElementById('zx-touch-keyboard-styles')) {
+      return;
+    }
+
+    const style = document.createElement('style');
+    style.id = 'zx-touch-keyboard-styles';
+    style.textContent = `
             .zx-touch-keyboard {
                 position: fixed;
                 bottom: 0;
@@ -198,114 +200,116 @@ export class TouchKeyboard {
                 }
             }
         `;
-        document.head.appendChild(style);
-    }
-    
-    _setupEventHandlers() {
-        const toggle = this.element.querySelector('.zx-keyboard-toggle');
-        toggle.addEventListener('click', () => this.toggle());
-        
-        // Handle key presses
-        const keys = this.element.querySelectorAll('.zx-key');
-        keys.forEach(keyElement => {
-            // Use touch events for better mobile support
-            keyElement.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                this._handleKeyDown(keyElement);
-            });
-            
-            keyElement.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                this._handleKeyUp(keyElement);
-            });
-            
-            // Also support mouse for desktop testing
-            keyElement.addEventListener('mousedown', (e) => {
-                e.preventDefault();
-                this._handleKeyDown(keyElement);
-            });
-            
-            keyElement.addEventListener('mouseup', (e) => {
-                e.preventDefault();
-                this._handleKeyUp(keyElement);
-            });
-            
-            keyElement.addEventListener('mouseleave', (e) => {
-                if (this.activeKeys.has(keyElement)) {
-                    this._handleKeyUp(keyElement);
-                }
-            });
-        });
-        
-        // Prevent context menu on long press
-        this.element.addEventListener('contextmenu', e => e.preventDefault());
-    }
-    
-    _handleKeyDown(keyElement) {
-        const key = keyElement.dataset.key;
-        if (this.activeKeys.has(keyElement)) return;
-        
-        this.activeKeys.add(keyElement);
-        keyElement.classList.add('active');
-        
-        // Map special keys
-        const mappedKey = this._mapKey(key);
-        this.spectrum.keyDown(mappedKey);
-    }
-    
-    _handleKeyUp(keyElement) {
-        const key = keyElement.dataset.key;
-        if (!this.activeKeys.has(keyElement)) return;
-        
-        this.activeKeys.delete(keyElement);
-        keyElement.classList.remove('active');
-        
-        // Map special keys
-        const mappedKey = this._mapKey(key);
-        this.spectrum.keyUp(mappedKey);
-    }
-    
-    _mapKey(key) {
-        const keyMap = {
-            'CAPS': 'Shift',
-            'SYMB': 'Control',
-            'SPACE': ' '
-        };
-        return keyMap[key] || key;
-    }
-    
-    _isTouchDevice() {
-        return 'ontouchstart' in window || 
-               navigator.maxTouchPoints > 0 ||
-               navigator.msMaxTouchPoints > 0;
-    }
-    
-    show() {
-        this.element.classList.add('visible');
-        this.isVisible = true;
-    }
-    
-    hide() {
-        this.element.classList.remove('visible');
-        this.isVisible = false;
-        
-        // Release any stuck keys
-        this.activeKeys.forEach(keyElement => {
-            this._handleKeyUp(keyElement);
-        });
-    }
-    
-    toggle() {
-        if (this.isVisible) {
-            this.hide();
-        } else {
-            this.show();
+    document.head.appendChild(style);
+  }
+
+  _setupEventHandlers() {
+    const toggle = this.element.querySelector('.zx-keyboard-toggle');
+    toggle.addEventListener('click', () => this.toggle());
+
+    // Handle key presses
+    const keys = this.element.querySelectorAll('.zx-key');
+    keys.forEach((keyElement) => {
+      // Use touch events for better mobile support
+      keyElement.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        this._handleKeyDown(keyElement);
+      });
+
+      keyElement.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        this._handleKeyUp(keyElement);
+      });
+
+      // Also support mouse for desktop testing
+      keyElement.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        this._handleKeyDown(keyElement);
+      });
+
+      keyElement.addEventListener('mouseup', (e) => {
+        e.preventDefault();
+        this._handleKeyUp(keyElement);
+      });
+
+      keyElement.addEventListener('mouseleave', (e) => {
+        if (this.activeKeys.has(keyElement)) {
+          this._handleKeyUp(keyElement);
         }
+      });
+    });
+
+    // Prevent context menu on long press
+    this.element.addEventListener('contextmenu', (e) => e.preventDefault());
+  }
+
+  _handleKeyDown(keyElement) {
+    const key = keyElement.dataset.key;
+    if (this.activeKeys.has(keyElement)) {
+      return;
     }
-    
-    destroy() {
-        if (this.element && this.element.parentNode) {
-            this.element.parentNode.removeChild(this.element);
-        }
+
+    this.activeKeys.add(keyElement);
+    keyElement.classList.add('active');
+
+    // Map special keys
+    const mappedKey = this._mapKey(key);
+    this.spectrum.keyDown(mappedKey);
+  }
+
+  _handleKeyUp(keyElement) {
+    const key = keyElement.dataset.key;
+    if (!this.activeKeys.has(keyElement)) {
+      return;
     }
+
+    this.activeKeys.delete(keyElement);
+    keyElement.classList.remove('active');
+
+    // Map special keys
+    const mappedKey = this._mapKey(key);
+    this.spectrum.keyUp(mappedKey);
+  }
+
+  _mapKey(key) {
+    const keyMap = {
+      CAPS: 'Shift',
+      SYMB: 'Control',
+      SPACE: ' ',
+    };
+    return keyMap[key] || key;
+  }
+
+  _isTouchDevice() {
+    return 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
+  }
+
+  show() {
+    this.element.classList.add('visible');
+    this.isVisible = true;
+  }
+
+  hide() {
+    this.element.classList.remove('visible');
+    this.isVisible = false;
+
+    // Release any stuck keys
+    this.activeKeys.forEach((keyElement) => {
+      this._handleKeyUp(keyElement);
+    });
+  }
+
+  toggle() {
+    if (this.isVisible) {
+      this.hide();
+    } else {
+      this.show();
+    }
+  }
+
+  destroy() {
+    if (this.element && this.element.parentNode) {
+      this.element.parentNode.removeChild(this.element);
+    }
+  }
 }

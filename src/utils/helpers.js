@@ -8,7 +8,7 @@
  * @returns {number} Sign-extended value (-128 to 127)
  */
 export function sign8(value) {
-    return value & 0x80 ? value - 256 : value;
+  return value & 0x80 ? value - 256 : value;
 }
 
 /**
@@ -17,7 +17,7 @@ export function sign8(value) {
  * @returns {number} Sign-extended value (-32768 to 32767)
  */
 export function sign16(value) {
-    return value & 0x8000 ? value - 65536 : value;
+  return value & 0x8000 ? value - 65536 : value;
 }
 
 /**
@@ -27,7 +27,7 @@ export function sign16(value) {
  * @returns {string} Padded hex string
  */
 export function toHex(value, digits = 2) {
-    return value.toString(16).padStart(digits, '0').toUpperCase();
+  return value.toString(16).padStart(digits, '0').toUpperCase();
 }
 
 /**
@@ -38,8 +38,8 @@ export function toHex(value, digits = 2) {
  * @returns {boolean} True if overflow occurred
  */
 export function checkOverflowAdd(a, b, result) {
-    // Overflow occurs when both operands have same sign but result has different sign
-    return ((a ^ b) & 0x80) === 0 && ((a ^ result) & 0x80) !== 0;
+  // Overflow occurs when both operands have same sign but result has different sign
+  return ((a ^ b) & 0x80) === 0 && ((a ^ result) & 0x80) !== 0;
 }
 
 /**
@@ -50,8 +50,8 @@ export function checkOverflowAdd(a, b, result) {
  * @returns {boolean} True if overflow occurred
  */
 export function checkOverflowSub(a, b, result) {
-    // Overflow occurs when operands have different signs and result has same sign as subtrahend
-    return ((a ^ b) & 0x80) !== 0 && ((a ^ result) & 0x80) !== 0;
+  // Overflow occurs when operands have different signs and result has same sign as subtrahend
+  return ((a ^ b) & 0x80) !== 0 && ((a ^ result) & 0x80) !== 0;
 }
 
 /**
