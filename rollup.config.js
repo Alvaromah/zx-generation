@@ -11,7 +11,7 @@ const banner = `/**
 export default [
   // ES Module build
   {
-    input: 'src/spectrum/spectrum.js',
+    input: 'src/index.js',
     output: {
       file: 'dist/zxgeneration.esm.js',
       format: 'es',
@@ -28,7 +28,7 @@ export default [
   },
   // UMD build (for browsers)
   {
-    input: 'src/spectrum/spectrum.js',
+    input: 'src/index.js',
     output: {
       file: 'dist/zxgeneration.umd.js',
       format: 'umd',
@@ -46,7 +46,7 @@ export default [
   },
   // Minified UMD build
   {
-    input: 'src/spectrum/spectrum.js',
+    input: 'src/index.js',
     output: {
       file: 'dist/zxgeneration.umd.min.js',
       format: 'umd',
