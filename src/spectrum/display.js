@@ -427,6 +427,12 @@ export class SpectrumDisplay {
      * ctx.putImageData(imageData, 0, 0);
      */
     getImageData() {
+        if (typeof ImageData === 'undefined') {
+            throw new Error(
+                'ImageData is not available in this environment (Node). ' +
+                'Read the raw RGBA pixels from display.displayBuffer instead.'
+            );
+        }
         // Create ImageData object with the display buffer
         return new ImageData(
             new Uint8ClampedArray(this.displayBuffer),
