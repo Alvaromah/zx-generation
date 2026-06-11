@@ -5,6 +5,16 @@
   "main": "dist/zxgeneration.umd.min.js",
   "module": "dist/zxgeneration.esm.js",
   "type": "module",
+  "exports": {
+    ".": {
+      "import": "./src/index.js",
+      "default": "./dist/zxgeneration.umd.min.js"
+    },
+    "./src/*": "./src/*",
+    "./dist/*": "./dist/*",
+    "./rom/*": "./rom/*",
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "start": "npx serve . -p 8080",
     "serve": "npx serve . -p 8080",
