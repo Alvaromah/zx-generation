@@ -34,11 +34,13 @@ export class Z80SnapshotLoader {
         regs.set16('PC', header[6] | (header[7] << 8));
         regs.set16('SP', header[8] | (header[9] << 8));
         regs.data.I = header[10];
-        regs.data.R = header[11];
 
-        const flags1 = header[12];
+        // Byte 12 per the .z80 spec: bit 0 = bit 7 of R, bits 1-3 = border,
+        // bit 5 = data compressed. Compatibility rule: 255 means 1.
+        const flags1 = header[12] === 0xff ? 1 : header[12];
+        regs.data.R = (header[11] & 0x7f) | ((flags1 & 0x01) << 7);
         const compressed = (flags1 & 0x20) !== 0;
-        const border = flags1 & 0x07;
+        const border = (flags1 >> 1) & 0x07;
 
         regs.set('E', header[13]);
         regs.set('D', header[14]);
@@ -54,7 +56,7 @@ export class Z80SnapshotLoader {
         regs.set16('IX', header[25] | (header[26] << 8));
         this.cpu.iff1 = header[27] !== 0;
         this.cpu.iff2 = header[28] !== 0;
-        this.cpu.interruptMode = header[29];
+        this.cpu.interruptMode = header[29] & 0x03; // bits 2-7 are other flags
 
         if (this.ula && typeof this.ula.setBorderColor === 'function') {
             this.ula.setBorderColor(border);
