@@ -9,12 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0  # Fetch all history for proper diffing
     
     - name: Use Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '20.x'
         cache: 'npm'
@@ -29,21 +29,18 @@ jobs:
       run: npm run lint -- --format=stylish
     
     - name: Check for console.log statements
+      # debugger.js is a console tool and tape.js logs block info on load;
+      # everything else in src/ must stay console.log-free.
       run: |
-        if grep -r "console\.log" --include="*.js" src/ | grep -v "// eslint-disable-line" | grep -v "tests/"; then
+        if grep -rn "^\s*console\.log" --include="*.js" src/ | grep -v "src/utils/debugger.js" | grep -v "src/spectrum/tape.js"; then
           echo "::error::Found console.log statements in source code. Please remove them."
           exit 1
         fi
     
     - name: Check test coverage
-      run: |
-        npm test -- --coverage --coverageReporters=text-summary
-        # Extract coverage percentage and check if it meets threshold
-        COVERAGE=$(npm test -- --coverage --coverageReporters=json-summary 2>/dev/null | grep -oP '"lines":{"total":\d+,"covered":\d+,"skipped":\d+,"pct":\K\d+' | head -1)
-        if [ "$COVERAGE" -lt "80" ]; then
-          echo "::error::Test coverage is below 80% (current: $COVERAGE%)"
-          exit 1
-        fi
+      # jest enforces the coverageThreshold in jest.config.js and exits
+      # non-zero when it is not met — no fragile output parsing needed.
+      run: npm test -- --coverage --coverageReporters=text-summary
     
     - name: Check bundle size
       run: |
@@ -52,7 +49,7 @@ jobs:
         ls -lh dist/
         
         # Check if main bundle exceeds limit
-        MAIN_SIZE=$(stat -c%s dist/zxgeneration.min.js 2>/dev/null || stat -f%z dist/zxgeneration.min.js)
+        MAIN_SIZE=$(stat -c%s dist/zxgeneration.umd.min.js 2>/dev/null || stat -f%z dist/zxgeneration.umd.min.js)
         MAX_SIZE=524288  # 512KB
         
         if [ "$MAIN_SIZE" -gt "$MAX_SIZE" ]; then
