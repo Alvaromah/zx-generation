@@ -155,6 +155,12 @@ export class ZXSpectrum {
     _resolveCanvas(canvasOrSelector) {
         if (typeof canvasOrSelector === 'string') {
             // It's a selector
+            if (typeof document === 'undefined') {
+                throw new Error(
+                    'Canvas selectors need a DOM. In Node, pass a canvas-like object ' +
+                    '(e.g. from the "canvas" package) instead of a selector string.'
+                );
+            }
             const element = document.querySelector(canvasOrSelector);
             if (!element) {
                 throw new Error(`Canvas element not found: ${canvasOrSelector}`);
@@ -166,7 +172,10 @@ export class ZXSpectrum {
                 return canvas;
             }
             return element;
-        } else if (canvasOrSelector instanceof HTMLCanvasElement) {
+        } else if (
+            typeof HTMLCanvasElement !== 'undefined' &&
+            canvasOrSelector instanceof HTMLCanvasElement
+        ) {
             return canvasOrSelector;
         } else if (canvasOrSelector && canvasOrSelector.tagName === 'CANVAS') {
             return canvasOrSelector;
@@ -214,10 +223,12 @@ export class ZXSpectrum {
         // Store bound functions for removal
         this._keyDownHandler = (e) => this._handleKeyDown(e);
         this._keyUpHandler = (e) => this._handleKeyUp(e);
-        
-        // Add event listeners
-        document.addEventListener('keydown', this._keyDownHandler);
-        document.addEventListener('keyup', this._keyUpHandler);
+
+        // Add event listeners (headless callers drive keyDown()/keyUp() directly)
+        if (typeof document !== 'undefined') {
+            document.addEventListener('keydown', this._keyDownHandler);
+            document.addEventListener('keyup', this._keyUpHandler);
+        }
     }
     
     /**
@@ -254,6 +265,9 @@ export class ZXSpectrum {
      * @returns {boolean} True if touch device
      */
     _isTouchDevice() {
+        if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+            return false; // headless
+        }
         return 'ontouchstart' in window || 
                navigator.maxTouchPoints > 0 ||
                navigator.msMaxTouchPoints > 0;

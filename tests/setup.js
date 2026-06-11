@@ -24,8 +24,9 @@ global.AudioContext = jest.fn().mockImplementation(() => ({
 // Mock AudioWorklet
 global.AudioWorkletNode = jest.fn();
 
-// Mock Canvas API
-HTMLCanvasElement.prototype.getContext = jest.fn().mockImplementation((type) => {
+// Mock Canvas API (only under jsdom — node-environment test files have no DOM)
+if (typeof HTMLCanvasElement !== 'undefined') {
+  HTMLCanvasElement.prototype.getContext = jest.fn().mockImplementation((type) => {
   if (type === '2d') {
     return {
       createImageData: jest.fn(() => ({
@@ -36,10 +37,11 @@ HTMLCanvasElement.prototype.getContext = jest.fn().mockImplementation((type) => 
       putImageData: jest.fn(),
       fillRect: jest.fn(),
       fillStyle: '',
-    };
-  }
-  return null;
-});
+      };
+    }
+    return null;
+  });
+}
 
 // Mock requestAnimationFrame
 global.requestAnimationFrame = jest.fn((cb) => {
