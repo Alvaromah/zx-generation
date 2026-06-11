@@ -35,6 +35,7 @@ The codebase was generated, reviewed, and refined primarily with **Anthropic Cla
     - [Basic usage](#basic-usage)
     - [Loading programs](#loading-programs)
   - [Examples](#examples)
+  - [Projects using ZX Generation](#projects-using-zx-generation)
   - [Browser Support](#browser-support)
   - [API Reference](#api-reference)
   - [src file structure](#src-file-structure)
@@ -126,6 +127,18 @@ spectrum.playTape();
 | **examples/minimal.html** | Truly minimal emulator setup                           |
 | **examples/basic.html**   | Full-featured interface with controls and tape loading |
 | **examples/retro.css**    | ZX Spectrum themed styling for examples                |
+
+---
+
+## Projects using ZX Generation
+
+- **[Spectral](https://github.com/Alvaromah/spectral)** (`@spectral-zx/toolkit`) —
+  an AI-agent toolchain that lets coding agents such as **Claude Code** write
+  ZX Spectrum 48K games autonomously. It drives ZX Generation as a headless,
+  in-process emulator to close the loop: *assemble → run → observe → debug →
+  iterate*. An LLM-written emulator, running LLM-written games.
+
+> Building something with ZX Generation? Open a PR to add it here.
 
 ---
 
