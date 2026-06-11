@@ -199,6 +199,37 @@ describe('Z80 CPU', () => {
       expect(state.halted).toBe(true);
       expect(state.cycles).toBe(1000);
     });
+
+    it('should include the shadow register set in getState', () => {
+      cpu.registers.set('A', 0x11);
+      cpu.registers.set('F', 0x22);
+      cpu.registers.setBC(0x3344);
+      cpu.registers.exchangeAF(); // park values in AF'
+      cpu.registers.exchangeAll(); // park values in BC'/DE'/HL'
+
+      const state = cpu.getState();
+      expect(state.a_).toBe(0x11);
+      expect(state.f_).toBe(0x22);
+      expect(state.b_).toBe(0x33);
+      expect(state.c_).toBe(0x44);
+    });
+
+    it('should round-trip shadow registers through setState', () => {
+      cpu.setState({
+        a_: 0xaa, f_: 0xbb,
+        b_: 0x01, c_: 0x02,
+        d_: 0x03, e_: 0x04,
+        h_: 0x05, l_: 0x06,
+      });
+
+      cpu.registers.exchangeAF();
+      cpu.registers.exchangeAll(); // swap shadows into the main set
+      expect(cpu.registers.get('A')).toBe(0xaa);
+      expect(cpu.registers.get('F')).toBe(0xbb);
+      expect(cpu.getBC()).toBe(0x0102);
+      expect(cpu.getDE()).toBe(0x0304);
+      expect(cpu.getHL()).toBe(0x0506);
+    });
   });
 
   describe('legacy register methods', () => {

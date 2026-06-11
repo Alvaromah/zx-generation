@@ -294,7 +294,17 @@ class Z80 {
             e: this.registers.get('E'),
             h: this.registers.get('H'),
             l: this.registers.get('L'),
-            
+
+            // Shadow register set (EX AF,AF' / EXX)
+            a_: this.registers.get('A_'),
+            f_: this.registers.get('F_'),
+            b_: this.registers.get('B_'),
+            c_: this.registers.get('C_'),
+            d_: this.registers.get('D_'),
+            e_: this.registers.get('E_'),
+            h_: this.registers.get('H_'),
+            l_: this.registers.get('L_'),
+
             // 16-bit index registers
             ix: this.registers.get16('IX'),
             iy: this.registers.get16('IY'),
@@ -326,6 +336,14 @@ class Z80 {
      * @param {number} [state.e] - E register
      * @param {number} [state.h] - H register
      * @param {number} [state.l] - L register
+     * @param {number} [state.a_] - Shadow accumulator (A')
+     * @param {number} [state.f_] - Shadow flags (F')
+     * @param {number} [state.b_] - Shadow B register (B')
+     * @param {number} [state.c_] - Shadow C register (C')
+     * @param {number} [state.d_] - Shadow D register (D')
+     * @param {number} [state.e_] - Shadow E register (E')
+     * @param {number} [state.h_] - Shadow H register (H')
+     * @param {number} [state.l_] - Shadow L register (L')
      * @param {number} [state.ix] - IX index register
      * @param {number} [state.iy] - IY index register
      * @param {number} [state.i] - Interrupt vector register
@@ -358,7 +376,17 @@ class Z80 {
         if (state.e !== undefined) this.registers.set('E', state.e);
         if (state.h !== undefined) this.registers.set('H', state.h);
         if (state.l !== undefined) this.registers.set('L', state.l);
-        
+
+        // Shadow register set
+        if (state.a_ !== undefined) this.registers.set('A_', state.a_);
+        if (state.f_ !== undefined) this.registers.set('F_', state.f_);
+        if (state.b_ !== undefined) this.registers.set('B_', state.b_);
+        if (state.c_ !== undefined) this.registers.set('C_', state.c_);
+        if (state.d_ !== undefined) this.registers.set('D_', state.d_);
+        if (state.e_ !== undefined) this.registers.set('E_', state.e_);
+        if (state.h_ !== undefined) this.registers.set('H_', state.h_);
+        if (state.l_ !== undefined) this.registers.set('L_', state.l_);
+
         // 16-bit index registers
         if (state.ix !== undefined) this.registers.set16('IX', state.ix);
         if (state.iy !== undefined) this.registers.set16('IY', state.iy);
